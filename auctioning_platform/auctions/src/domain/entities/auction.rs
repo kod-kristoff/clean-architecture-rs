@@ -15,7 +15,7 @@ impl Auction {
     }
 
     fn starting_price(&self) -> Money {
-        todo!()
+        self.starting_price
     }
 }
 
