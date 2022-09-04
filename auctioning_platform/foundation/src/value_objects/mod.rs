@@ -1,4 +1,5 @@
 mod currency;
+pub mod factories;
 mod money;
 
 use std::sync::Arc;

@@ -1,6 +1,7 @@
-use crate::value_objects::{Currency, USD};
+use crate::value_objects::Currency;
 use core::str::FromStr;
 use rust_decimal::Decimal;
+use std::cmp::Ordering;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Money {
@@ -21,9 +22,18 @@ impl std::fmt::Display for Money {
     }
 }
 
+impl PartialOrd for Money {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self.currency != other.currency {
+            return None;
+        }
+        self.amount.partial_cmp(&other.amount)
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::value_objects::USD;
     use rstest::{fixture, rstest};
 
     #[rstest]
