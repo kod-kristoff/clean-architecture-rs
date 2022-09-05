@@ -1,5 +1,5 @@
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BidId(pub u32);
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BidderId(pub u32);

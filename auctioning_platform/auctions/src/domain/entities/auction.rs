@@ -1,4 +1,4 @@
-use crate::domain::entities::Bid;
+use crate::domain::{entities::Bid, value_objects::BidderId};
 use foundation::value_objects::Money;
 
 pub struct Auction {
@@ -23,6 +23,15 @@ impl Auction {
         }
     }
 }
+
+// Builder lite
+impl Auction {
+    pub fn with_bids(mut self, mut bids: Vec<Bid>) -> Self {
+        bids.sort_by(|a, b| b.amount.partial_cmp(&a.amount).unwrap());
+        self.bids = bids;
+        self
+    }
+}
 impl Auction {
     pub fn current_price(&self) -> Money {
         if self.bids.is_empty() {
@@ -34,6 +43,14 @@ impl Auction {
 
     pub fn starting_price(&self) -> Money {
         self.starting_price
+    }
+
+    pub fn winners(&self) -> Vec<BidderId> {
+        if self.bids.is_empty() {
+            Vec::new()
+        } else {
+            vec![self.highest_bid().bidder_id]
+        }
     }
 
     fn highest_bid(&self) -> &Bid {
@@ -54,14 +71,22 @@ mod tests {
         Auction::new(get_dollars("7.49"))
     }
 
-    #[rstest]
-    fn should_use_starting_price_as_current_price_for_empty_bids_list(auction_wo_bids: Auction) {
-        assert_eq!(
-            auction_wo_bids.current_price(),
-            auction_wo_bids.starting_price()
-        )
-    }
+    mod empty_bid_list {
+        use super::*;
 
+        #[rstest]
+        fn should_use_starting_price_as_current_price(auction_wo_bids: Auction) {
+            assert_eq!(
+                auction_wo_bids.current_price(),
+                auction_wo_bids.starting_price()
+            )
+        }
+
+        #[rstest]
+        fn should_return_no_winners(auction_wo_bids: Auction) {
+            assert_eq!(auction_wo_bids.winners(), Vec::new());
+        }
+    }
     #[test]
     fn should_return_highest_bid_for_current_price() {
         let auction = Auction::with_bids(
@@ -82,5 +107,15 @@ mod tests {
         let auction = Auction::new(starting_price);
 
         assert_eq!(auction.current_price(), starting_price);
+    }
+
+    #[rstest]
+    fn should_return_highest_bids_user_id_for_winners_list(auction_wo_bids: Auction) {
+        let auction = auction_wo_bids.with_bids(vec![
+            Bid{id: Some(BidId(1), bidder_id: 1, amount: get_dollars("101")},
+            Bid(id = 2, bidder_id = 2, amount = get_dollars("15")),
+            Bid(id = 3, bidder_id = 3, amount = get_dollars("100")),
+        ]);
+        assert_eq!(auction.winners(), vec![BidderId(1)]);
     }
 }
