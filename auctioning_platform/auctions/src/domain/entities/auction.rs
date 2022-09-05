@@ -15,8 +15,8 @@ impl Auction {
         }
     }
 
-    pub fn with_bids(starting_price: Money, mut bids: Vec<Bid>) -> Self {
-        bids.sort_by(|a, b| b.amount.partial_cmp(&a.amount).unwrap());
+    pub fn new_with_bids(starting_price: Money, mut bids: Vec<Bid>) -> Self {
+        bids.sort_by(|a, b| a.amount.partial_cmp(&b.amount).unwrap());
         Self {
             starting_price,
             bids,
@@ -27,7 +27,7 @@ impl Auction {
 // Builder lite
 impl Auction {
     pub fn with_bids(mut self, mut bids: Vec<Bid>) -> Self {
-        bids.sort_by(|a, b| b.amount.partial_cmp(&a.amount).unwrap());
+        bids.sort_by(|a, b| a.amount.partial_cmp(&b.amount).unwrap());
         self.bids = bids;
         self
     }
@@ -89,14 +89,11 @@ mod tests {
     }
     #[test]
     fn should_return_highest_bid_for_current_price() {
-        let auction = Auction::with_bids(
-            get_dollars("10"),
-            vec![Bid {
-                id: Some(BidId(1)),
-                bidder_id: BidderId(1),
-                amount: get_dollars("20"),
-            }],
-        );
+        let auction = Auction::new(get_dollars("10")).with_bids(vec![Bid {
+            id: Some(BidId(1)),
+            bidder_id: BidderId(1),
+            amount: get_dollars("20"),
+        }]);
 
         assert_eq!(auction.current_price(), get_dollars("20"));
     }
@@ -112,9 +109,21 @@ mod tests {
     #[rstest]
     fn should_return_highest_bids_user_id_for_winners_list(auction_wo_bids: Auction) {
         let auction = auction_wo_bids.with_bids(vec![
-            Bid{id: Some(BidId(1), bidder_id: 1, amount: get_dollars("101")},
-            Bid(id = 2, bidder_id = 2, amount = get_dollars("15")),
-            Bid(id = 3, bidder_id = 3, amount = get_dollars("100")),
+            Bid {
+                id: Some(BidId(1)),
+                bidder_id: BidderId(1),
+                amount: get_dollars("101"),
+            },
+            Bid {
+                id: Some(BidId(2)),
+                bidder_id: BidderId(2),
+                amount: get_dollars("15"),
+            },
+            Bid {
+                id: Some(BidId(3)),
+                bidder_id: BidderId(3),
+                amount: get_dollars("100"),
+            },
         ]);
         assert_eq!(auction.winners(), vec![BidderId(1)]);
     }
