@@ -41,6 +41,17 @@ impl Auction {
         }
     }
 
+    pub fn place_bid(&mut self, bidder_id: BidderId, amount: Money) {
+        if amount > self.current_price() {
+            let new_bid = Bid {
+                id: None,
+                bidder_id,
+                amount,
+            };
+            self.bids.push(new_bid);
+        }
+    }
+
     pub fn starting_price(&self) -> Money {
         self.starting_price
     }
@@ -85,6 +96,27 @@ mod tests {
         #[rstest]
         fn should_return_no_winners(auction_wo_bids: Auction) {
             assert_eq!(auction_wo_bids.winners(), Vec::new());
+        }
+    }
+
+    mod place_bid {
+        use super::*;
+
+        #[rstest]
+        fn should_win_auction_if_is_the_only_bidder_above_starting_price(
+            mut auction_wo_bids: Auction,
+        ) {
+            auction_wo_bids.place_bid(BidderId(1), get_dollars("11"));
+
+            assert_eq!(auction_wo_bids.winners(), vec![BidderId(1)]);
+        }
+
+        #[rstest]
+        fn test_should_not_be_winning_auction_if_bids_below_starting_price(
+            mut auction_wo_bids: Auction,
+        ) {
+            auction_wo_bids.place_bid(BidderId(1), get_dollars("5"));
+            assert_eq!(auction_wo_bids.winners(), vec![]);
         }
     }
     #[test]
