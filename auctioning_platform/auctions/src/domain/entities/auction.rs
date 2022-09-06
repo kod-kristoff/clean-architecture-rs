@@ -1,6 +1,10 @@
-use crate::domain::{entities::Bid, value_objects::{AuctionId, BidderId}};
+use crate::domain::{
+    entities::Bid,
+    value_objects::{AuctionId, BidderId},
+};
 use foundation::value_objects::Money;
 
+#[derive(Clone, Debug)]
 pub struct Auction {
     id: AuctionId,
     starting_price: Money,

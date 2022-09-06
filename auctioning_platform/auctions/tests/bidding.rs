@@ -1,13 +1,14 @@
+use auctions::application::repositories::AuctionsRepository;
 use auctions::application::use_cases::placing_bid::{
     PlaceBid, PlacingBidOutputBoundary, PlacingBidOutputDto,
 };
-use auctions::application::repositories::AuctionsRepository;
 use auctions::domain::entities::Auction;
 use auctions::domain::value_objects::{AuctionId, BidderId};
 use auctions::PlacingBid;
 use foundation::value_objects::factories::get_dollars;
 use rstest::{fixture, rstest};
 use std::sync::Arc;
+use test::in_memory_repo::InMemoryAuctionsRepo;
 
 struct PlacingBidOutputBoundaryFake {
     dto: Option<PlacingBidOutputDto>,
@@ -31,7 +32,7 @@ fn output_boundary() -> PlacingBidOutputBoundaryFake {
 
 #[fixture]
 fn auctions_repo() -> Arc<dyn AuctionsRepository> {
-    todo!("")
+    Arc::new(InMemoryAuctionsRepo::new())
 }
 
 #[fixture]
@@ -44,10 +45,7 @@ fn auction_id(auction: Auction) -> AuctionId {
     auction.id()
 }
 #[fixture]
-fn place_bid_uc(
-    auction: Auction,
-    auctions_repo: Arc<dyn AuctionsRepository>,
-) -> PlacingBid {
+fn place_bid_uc(auction: Auction, auctions_repo: Arc<dyn AuctionsRepository>) -> PlacingBid {
     auctions_repo.save(&auction);
     PlacingBid::new(auctions_repo)
 }

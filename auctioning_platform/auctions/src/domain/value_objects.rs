@@ -1,4 +1,4 @@
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct AuctionId(pub u32);
 
 #[derive(Clone, Copy, Debug, PartialEq)]
