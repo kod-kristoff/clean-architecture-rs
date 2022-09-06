@@ -1,23 +1,17 @@
-use crate::domain::{entities::Bid, value_objects::BidderId};
+use crate::domain::{entities::Bid, value_objects::{AuctionId, BidderId}};
 use foundation::value_objects::Money;
 
 pub struct Auction {
+    id: AuctionId,
     starting_price: Money,
     bids: Vec<Bid>,
 }
 
 impl Auction {
-    pub fn new(starting_price: Money) -> Self {
+    pub fn new(id: AuctionId, starting_price: Money) -> Self {
         let bids = Vec::new();
         Self {
-            starting_price,
-            bids,
-        }
-    }
-
-    pub fn new_with_bids(starting_price: Money, mut bids: Vec<Bid>) -> Self {
-        bids.sort_by(|a, b| a.amount.partial_cmp(&b.amount).unwrap());
-        Self {
+            id,
             starting_price,
             bids,
         }
@@ -33,6 +27,9 @@ impl Auction {
     }
 }
 impl Auction {
+    pub fn id(&self) -> AuctionId {
+        self.id
+    }
     pub fn current_price(&self) -> Money {
         if self.bids.is_empty() {
             self.starting_price
@@ -79,7 +76,7 @@ mod tests {
 
     #[fixture]
     fn auction_wo_bids() -> Auction {
-        Auction::new(get_dollars("7.49"))
+        Auction::new(AuctionId(1), get_dollars("7.49"))
     }
 
     mod empty_bid_list {
@@ -121,7 +118,7 @@ mod tests {
     }
     #[test]
     fn should_return_highest_bid_for_current_price() {
-        let auction = Auction::new(get_dollars("10")).with_bids(vec![Bid {
+        let auction = Auction::new(AuctionId(1), get_dollars("10")).with_bids(vec![Bid {
             id: Some(BidId(1)),
             bidder_id: BidderId(1),
             amount: get_dollars("20"),
@@ -133,7 +130,7 @@ mod tests {
     #[test]
     fn untouched_auction_has_current_price_equal_to_starting() {
         let starting_price = get_dollars("12.99");
-        let auction = Auction::new(starting_price);
+        let auction = Auction::new(AuctionId(1), starting_price);
 
         assert_eq!(auction.current_price(), starting_price);
     }
