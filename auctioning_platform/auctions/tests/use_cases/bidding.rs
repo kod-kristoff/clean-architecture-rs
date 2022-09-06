@@ -8,7 +8,7 @@ use auctions::PlacingBid;
 use foundation::value_objects::factories::get_dollars;
 use rstest::{fixture, rstest};
 use std::sync::Arc;
-use test::in_memory_repo::InMemoryAuctionsRepo;
+use crate::in_memory_repo::InMemoryAuctionsRepo;
 
 struct PlacingBidOutputBoundaryFake {
     dto: Option<PlacingBidOutputDto>,
