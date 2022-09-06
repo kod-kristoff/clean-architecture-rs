@@ -1,3 +1,4 @@
+use crate::in_memory_repo::InMemoryAuctionsRepo;
 use auctions::application::repositories::AuctionsRepository;
 use auctions::application::use_cases::placing_bid::{
     PlaceBid, PlacingBidOutputBoundary, PlacingBidOutputDto,
@@ -8,7 +9,6 @@ use auctions::PlacingBid;
 use foundation::value_objects::factories::get_dollars;
 use rstest::{fixture, rstest};
 use std::sync::Arc;
-use crate::in_memory_repo::InMemoryAuctionsRepo;
 
 struct PlacingBidOutputBoundaryFake {
     dto: Option<PlacingBidOutputDto>,
@@ -52,11 +52,14 @@ fn place_bid_uc(auction: Auction, auctions_repo: Arc<dyn AuctionsRepository>) ->
 
 #[rstest]
 fn auction_FirstBidHigherThanIntialPrice_IsWinning(
-    place_bid_uc: PlacingBid,
+    auction: Auction,
     auction_id: AuctionId,
     auctions_repo: Arc<dyn AuctionsRepository>,
 ) {
-    place_bid_uc.execute(PlaceBid::new(BidderId(1), auction_id, get_dollars("100")));
+    let uc = place_bid_uc(auction, auctions_repo.clone());
+    uc.execute(PlaceBid::new(BidderId(1), auction_id, get_dollars("100")));
 
+    let auction = auctions_repo.get(auction_id);
+    println!("{:?}", auction);
     assert!(auctions_repo.get(auction_id).is_some());
 }

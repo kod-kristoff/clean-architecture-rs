@@ -1,3 +1,3 @@
 mod auctions;
 
-pub use auctions::AuctionsRepository;
+pub use self::auctions::AuctionsRepository;

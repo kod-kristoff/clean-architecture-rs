@@ -14,7 +14,7 @@ impl PlaceBid {
         Self {
             bidder_id,
             auction_id,
-            amount
+            amount,
         }
     }
 }
@@ -46,5 +46,9 @@ impl PlacingBid {
 }
 
 impl PlacingBid {
-    pub fn execute(&self, cmd: PlaceBid) {}
+    pub fn execute(&self, cmd: PlaceBid) {
+        let mut auction = self.auctions_repo.get(cmd.auction_id).unwrap();
+        auction.place_bid(cmd.bidder_id, cmd.amount);
+        self.auctions_repo.save(&auction);
+    }
 }
