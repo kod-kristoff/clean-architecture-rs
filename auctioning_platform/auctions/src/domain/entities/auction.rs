@@ -1,22 +1,26 @@
 use crate::domain::{
     entities::Bid,
+    error::DomainError,
     value_objects::{AuctionId, BidderId},
 };
+use chrono::{DateTime, Utc};
 use foundation::value_objects::Money;
 
 #[derive(Clone, Debug)]
 pub struct Auction {
     id: AuctionId,
     starting_price: Money,
+    ends_at: DateTime<Utc>,
     bids: Vec<Bid>,
 }
 
 impl Auction {
-    pub fn new(id: AuctionId, starting_price: Money) -> Self {
+    pub fn new(id: AuctionId, starting_price: Money, ends_at: DateTime<Utc>) -> Self {
         let bids = Vec::new();
         Self {
             id,
             starting_price,
+            ends_at,
             bids,
         }
     }
@@ -42,7 +46,10 @@ impl Auction {
         }
     }
 
-    pub fn place_bid(&mut self, bidder_id: BidderId, amount: Money) {
+    pub fn place_bid(&mut self, bidder_id: BidderId, amount: Money) -> Result<(), DomainError> {
+        if Utc::now() > self.ends_at {
+            return Err(DomainError::BidOnEndedAuction);
+        }
         if amount > self.current_price() {
             let new_bid = Bid {
                 id: None,
@@ -51,6 +58,7 @@ impl Auction {
             };
             self.bids.push(new_bid);
         }
+        Ok(())
     }
 
     pub fn starting_price(&self) -> Money {
@@ -75,12 +83,18 @@ impl Auction {
 mod tests {
     use super::*;
     use crate::domain::value_objects::{BidId, BidderId};
+    use chrono::Duration;
     use foundation::value_objects::factories::get_dollars;
     use rstest::{fixture, rstest};
 
     #[fixture]
-    fn auction_wo_bids() -> Auction {
-        Auction::new(AuctionId(1), get_dollars("7.49"))
+    fn ends_at() -> DateTime<Utc> {
+        Utc::now() + Duration::days(7)
+    }
+
+    #[fixture]
+    fn auction_wo_bids(ends_at: DateTime<Utc>) -> Auction {
+        Auction::new(AuctionId(1), get_dollars("7.49"), ends_at)
     }
 
     mod empty_bid_list {
@@ -113,16 +127,16 @@ mod tests {
         }
 
         #[rstest]
-        fn test_should_not_be_winning_auction_if_bids_below_starting_price(
+        fn should_not_be_winning_auction_if_bids_below_starting_price(
             mut auction_wo_bids: Auction,
         ) {
             auction_wo_bids.place_bid(BidderId(1), get_dollars("5"));
             assert_eq!(auction_wo_bids.winners(), vec![]);
         }
     }
-    #[test]
-    fn should_return_highest_bid_for_current_price() {
-        let auction = Auction::new(AuctionId(1), get_dollars("10")).with_bids(vec![Bid {
+    #[rstest]
+    fn should_return_highest_bid_for_current_price(auction_wo_bids: Auction) {
+        let auction = auction_wo_bids.with_bids(vec![Bid {
             id: Some(BidId(1)),
             bidder_id: BidderId(1),
             amount: get_dollars("20"),
@@ -131,10 +145,10 @@ mod tests {
         assert_eq!(auction.current_price(), get_dollars("20"));
     }
 
-    #[test]
-    fn untouched_auction_has_current_price_equal_to_starting() {
+    #[rstest]
+    fn untouched_auction_has_current_price_equal_to_starting(ends_at: DateTime<Utc>) {
         let starting_price = get_dollars("12.99");
-        let auction = Auction::new(AuctionId(1), starting_price);
+        let auction = Auction::new(AuctionId(1), starting_price, ends_at);
 
         assert_eq!(auction.current_price(), starting_price);
     }
