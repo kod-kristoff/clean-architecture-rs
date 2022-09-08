@@ -49,7 +49,12 @@ fn auctions_repo() -> Arc<dyn AuctionsRepository> {
 #[fixture]
 fn auction(default_auction_end: DateTime<Utc>) -> Auction {
     println!("ends_at: {:?}", default_auction_end);
-    Auction::new(AuctionId(1), get_dollars("7.49"), default_auction_end)
+    Auction::new(
+        AuctionId(1),
+        "socks".into(),
+        get_dollars("7.49"),
+        default_auction_end,
+    )
 }
 
 #[fixture]

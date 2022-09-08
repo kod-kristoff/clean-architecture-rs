@@ -30,6 +30,20 @@ impl PartialOrd for Money {
         self.amount.partial_cmp(&other.amount)
     }
 }
+
+impl std::ops::Add for Money {
+    type Output = Money;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        if self.currency != rhs.currency {
+            panic!("currency mismatch");
+        }
+        Money {
+            currency: self.currency,
+            amount: self.amount + rhs.amount,
+        }
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
