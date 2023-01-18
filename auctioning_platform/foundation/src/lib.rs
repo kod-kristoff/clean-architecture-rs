@@ -1,3 +1,4 @@
+pub mod events;
 pub mod value_objects;
 
 #[cfg(test)]

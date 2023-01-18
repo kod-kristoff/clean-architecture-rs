@@ -1,10 +1,11 @@
 use crate::domain::{
     entities::Bid,
     error::DomainError,
-    events::DomainEvent,
+    events::{Event, WinningBidPlaced},
     value_objects::{AuctionId, BidderId},
 };
 use chrono::{DateTime, Utc};
+
 use foundation::value_objects::Money;
 
 #[derive(Clone, Debug)]
@@ -57,33 +58,6 @@ impl Auction {
             self.highest_bid().amount
         }
     }
-
-    pub fn place_bid(
-        &mut self,
-        bidder_id: BidderId,
-        amount: Money,
-    ) -> Result<Vec<DomainEvent>, DomainError> {
-        if Utc::now() > self.ends_at {
-            return Err(DomainError::BidOnEndedAuction);
-        }
-        let mut events = vec![];
-        if amount > self.current_price() {
-            let new_bid = Bid {
-                id: None,
-                bidder_id,
-                amount,
-            };
-            self.bids.push(new_bid);
-            events.push(DomainEvent::WinningBidPlaced {
-                auction_id: self.id,
-                bidder_id,
-                bid_amount: amount,
-                auction_title: self.title.clone(),
-            })
-        }
-        Ok(events)
-    }
-
     pub fn starting_price(&self) -> Money {
         self.starting_price
     }
@@ -102,13 +76,39 @@ impl Auction {
     }
 }
 
+impl Auction {
+    // use cases
+    pub fn place_bid(
+        &mut self,
+        bidder_id: BidderId,
+        amount: Money,
+    ) -> Result<Vec<Box<dyn Event>>, DomainError> {
+        if Utc::now() > self.ends_at {
+            return Err(DomainError::BidOnEndedAuction);
+        }
+        let mut events: Vec<Box<dyn Event>> = Vec::new();
+        if amount > self.current_price() {
+            let new_bid = Bid {
+                id: None,
+                bidder_id,
+                amount,
+            };
+            self.bids.push(new_bid);
+            events.push(Box::new(WinningBidPlaced {
+                auction_id: self.id,
+                bidder_id,
+                bid_amount: amount,
+                auction_title: self.title.clone(),
+            }))
+        }
+        Ok(events)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::{
-        events::DomainEvent::WinningBidPlaced,
-        value_objects::{BidId, BidderId},
-    };
+    use crate::domain::value_objects::{BidId, BidderId};
     use chrono::Duration;
     use foundation::value_objects::factories::get_dollars;
     use rstest::{fixture, rstest};
@@ -152,7 +152,9 @@ mod tests {
         fn should_win_auction_if_is_the_only_bidder_above_starting_price(
             mut auction_wo_bids: Auction,
         ) {
-            auction_wo_bids.place_bid(BidderId(1), get_dollars("11"));
+            auction_wo_bids
+                .place_bid(BidderId(1), get_dollars("11"))
+                .unwrap();
 
             assert_eq!(auction_wo_bids.winners(), vec![BidderId(1)]);
         }
@@ -161,7 +163,9 @@ mod tests {
         fn should_not_be_winning_auction_if_bids_below_starting_price(
             mut auction_wo_bids: Auction,
         ) {
-            auction_wo_bids.place_bid(BidderId(1), get_dollars("5"));
+            auction_wo_bids
+                .place_bid(BidderId(1), get_dollars("5"))
+                .unwrap();
             assert_eq!(auction_wo_bids.winners(), vec![]);
         }
     }
@@ -214,15 +218,14 @@ mod tests {
             let domain_events = auction_wo_bids
                 .place_bid(BidderId(1), winning_amount)
                 .unwrap();
-            assert_eq!(
-                domain_events,
-                vec![WinningBidPlaced {
-                    auction_id: auction_wo_bids.id(),
-                    bidder_id: BidderId(1),
-                    bid_amount: winning_amount,
-                    auction_title: auction_wo_bids.title().to_string(),
-                }]
-            );
+            assert_eq!(domain_events.len(), 1);
+            let expected_event = WinningBidPlaced {
+                auction_id: auction_wo_bids.id(),
+                bidder_id: BidderId(1),
+                bid_amount: winning_amount,
+                auction_title: auction_wo_bids.title().to_string(),
+            };
+            assert_eq!(domain_events[0].event_id(), expected_event.event_id());
         }
     }
 }
