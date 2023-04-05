@@ -2,6 +2,8 @@ pub mod application;
 pub mod domain;
 
 pub use crate::application::use_cases::placing_bid::PlacingBid;
+
+pub use crate::application::use_cases::{BeginningAuction, BeginningAuctionInputDto};
 #[cfg(test)]
 mod tests {
     #[test]

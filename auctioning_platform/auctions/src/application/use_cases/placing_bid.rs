@@ -1,7 +1,8 @@
 use crate::application::repositories::AuctionsRepository;
+use crate::application::ApplicationResult;
 use crate::domain::{
-    error::DomainError,
     value_objects::{AuctionId, BidderId},
+    DomainError,
 };
 use foundation::value_objects::Money;
 use std::sync::Arc;
@@ -49,10 +50,10 @@ impl PlacingBid {
 }
 
 impl PlacingBid {
-    pub fn execute(&self, cmd: PlaceBid) -> Result<(), DomainError> {
+    pub fn execute(&self, cmd: PlaceBid) -> ApplicationResult<()> {
         let mut auction = self.auctions_repo.get(cmd.auction_id).unwrap();
         auction.place_bid(cmd.bidder_id, cmd.amount)?;
-        self.auctions_repo.save(&auction);
+        self.auctions_repo.save(&auction)?;
         Ok(())
     }
 }

@@ -1,2 +1,4 @@
+mod beginning_auction;
 mod bidding;
-mod in_memory_repo;
+pub mod factories;
+pub mod in_memory_repo;

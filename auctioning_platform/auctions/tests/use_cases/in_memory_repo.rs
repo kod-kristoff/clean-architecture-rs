@@ -1,4 +1,5 @@
 use auctions::application::repositories::AuctionsRepository;
+use auctions::application::ApplicationResult;
 use auctions::domain::{entities::Auction, value_objects::AuctionId};
 use std::collections::HashMap;
 use std::sync::Mutex;
@@ -22,10 +23,11 @@ impl AuctionsRepository for InMemoryAuctionsRepo {
         }
     }
 
-    fn save(&self, auction: &Auction) {
+    fn save(&self, auction: &Auction) -> ApplicationResult<()> {
         self.store
             .lock()
             .unwrap()
             .insert(auction.id(), auction.clone());
+        Ok(())
     }
 }
