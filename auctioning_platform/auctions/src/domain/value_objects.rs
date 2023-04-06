@@ -10,5 +10,17 @@ impl From<u32> for AuctionId {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BidId(pub u32);
 
+impl From<u32> for BidId {
+    fn from(value: u32) -> Self {
+        Self(value)
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BidderId(pub u32);
+
+impl From<u32> for BidderId {
+    fn from(value: u32) -> Self {
+        Self(value)
+    }
+}

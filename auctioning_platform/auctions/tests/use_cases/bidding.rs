@@ -1,5 +1,5 @@
 use crate::factories::{self, auctions_repo};
-use auctions::application::repositories::AuctionsRepository;
+use auctions::application::repositories::{AuctionsRepository, DynAuctionsRepository};
 use auctions::application::use_cases::placing_bid::{
     PlaceBid, PlacingBidOutputBoundary, PlacingBidOutputDto,
 };
@@ -55,19 +55,22 @@ fn auction_id(auction: Auction) -> AuctionId {
 }
 #[fixture]
 fn place_bid_uc(auction: Auction, auctions_repo: Arc<dyn AuctionsRepository>) -> PlacingBid {
-    auctions_repo.save(&auction);
+    auctions_repo.save(&auction).expect("saving auction");
     PlacingBid::new(auctions_repo)
 }
 
 #[rstest]
-fn auction_firstbidhigherthanintialprice_is_winning(
+fn first_bid_higher_than_intial_price_is_winning(
     auction: Auction,
     auction_id: AuctionId,
-    auctions_repo: Arc<dyn AuctionsRepository>,
+    auctions_repo: DynAuctionsRepository,
 ) {
     let uc = place_bid_uc(auction, auctions_repo.clone());
-    uc.execute(PlaceBid::new(BidderId(1), auction_id, get_dollars("100")))
+    let output = uc
+        .execute(PlaceBid::new(BidderId(1), auction_id, get_dollars("100")))
         .unwrap();
+
+    assert!(output.is_winner);
 
     let auction = auctions_repo.get(auction_id);
     println!("{:?}", auction);
@@ -75,10 +78,57 @@ fn auction_firstbidhigherthanintialprice_is_winning(
 }
 
 #[rstest]
+fn bid_lower_than_current_price_is_losing(place_bid_uc: PlacingBid, auction_id: AuctionId) {
+    let dto = place_bid_uc
+        .execute(PlaceBid::new(1.into(), auction_id, get_dollars("5")))
+        .unwrap();
+
+    assert!(!dto.is_winner);
+    assert_eq!(dto.current_price, get_dollars("7.49"));
+}
+
+#[rstest]
+fn overbid_is_winning(place_bid_uc: PlacingBid, auction_id: AuctionId) {
+    place_bid_uc
+        .execute(PlaceBid::new(1.into(), auction_id, get_dollars("100")))
+        .unwrap();
+
+    let dto = place_bid_uc
+        .execute(PlaceBid::new(2.into(), auction_id, get_dollars("120")))
+        .unwrap();
+
+    assert_eq!(
+        dto,
+        PlacingBidOutputDto {
+            is_winner: true,
+            current_price: get_dollars("120")
+        }
+    );
+}
+
+#[rstest]
+fn overbid_by_winner_is_winning(place_bid_uc: PlacingBid, auction_id: AuctionId) {
+    place_bid_uc
+        .execute(PlaceBid::new(1.into(), auction_id, get_dollars("100")))
+        .unwrap();
+
+    let dto = place_bid_uc
+        .execute(PlaceBid::new(1.into(), auction_id, get_dollars("120")))
+        .unwrap();
+
+    assert_eq!(
+        dto,
+        PlacingBidOutputDto {
+            is_winner: true,
+            current_price: get_dollars("120")
+        }
+    );
+}
+#[rstest]
 fn bid_on_ended_auction_returns_error(
     #[with(factories::yesterday())] auction: Auction,
     auction_id: AuctionId,
-    auctions_repo: Arc<dyn AuctionsRepository>,
+    auctions_repo: DynAuctionsRepository,
 ) {
     println!("{:?}", auction);
     let uc = place_bid_uc(auction, auctions_repo.clone());

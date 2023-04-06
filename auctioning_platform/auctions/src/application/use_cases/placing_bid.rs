@@ -7,6 +7,7 @@ use crate::domain::{
 use foundation::value_objects::Money;
 use std::sync::Arc;
 
+#[derive(Debug, Clone, Copy)]
 pub struct PlaceBid {
     bidder_id: BidderId,
     auction_id: AuctionId,
@@ -23,6 +24,7 @@ impl PlaceBid {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PlacingBidOutputDto {
     pub is_winner: bool,
     pub current_price: Money,
@@ -50,10 +52,14 @@ impl PlacingBid {
 }
 
 impl PlacingBid {
-    pub fn execute(&self, cmd: PlaceBid) -> ApplicationResult<()> {
+    pub fn execute(&self, cmd: PlaceBid) -> ApplicationResult<PlacingBidOutputDto> {
         let mut auction = self.auctions_repo.get(cmd.auction_id).unwrap();
         auction.place_bid(cmd.bidder_id, cmd.amount)?;
         self.auctions_repo.save(&auction)?;
-        Ok(())
+
+        Ok(PlacingBidOutputDto {
+            is_winner: auction.winners().contains(&cmd.bidder_id),
+            current_price: auction.current_price(),
+        })
     }
 }
