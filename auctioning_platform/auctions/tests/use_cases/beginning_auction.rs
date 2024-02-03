@@ -2,9 +2,8 @@ use std::error::Error;
 
 use crate::factories::auctions_repo;
 use auctions::{
-    application::{repositories::DynAuctionsRepository, ApplicationError},
-    domain::DomainError,
-    BeginningAuction, BeginningAuctionInputDto,
+    application::repositories::DynAuctionsRepository, domain::DomainError, BeginningAuction,
+    BeginningAuctionInputDto,
 };
 use chrono::Utc;
 use foundation::value_objects::factories::get_dollars;
