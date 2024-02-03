@@ -48,7 +48,7 @@ impl std::ops::Add for Money {
 mod tests {
     use super::*;
     use crate::value_objects::USD;
-    use rstest::{fixture, rstest};
+    use rstest::rstest;
 
     #[rstest]
     #[case(Money::new(USD, "18.59"), "18.59 $")]
