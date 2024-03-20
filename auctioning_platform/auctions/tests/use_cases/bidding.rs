@@ -35,7 +35,7 @@ fn output_boundary() -> PlacingBidOutputBoundaryFake {
 
 #[fixture]
 fn default_auction_end() -> DateTime<Utc> {
-    Utc::now() + chrono::Duration::days(7)
+    Utc::now() + chrono::Duration::try_days(7).unwrap()
 }
 
 #[fixture]

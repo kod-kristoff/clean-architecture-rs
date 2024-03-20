@@ -38,7 +38,7 @@ fn ends_in_the_future_returns_ok(auctions_repo: DynAuctionsRepository) {
         auction_id: 1.into(),
         title: "Socks".into(),
         starting_price: get_dollars("1.00"),
-        ends_at: Utc::now() + chrono::Duration::days(7),
+        ends_at: Utc::now() + chrono::Duration::try_days(7).unwrap(),
     };
     let auction_id = input.auction_id;
     uc.execute(input).unwrap();
