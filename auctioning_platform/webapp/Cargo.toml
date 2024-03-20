@@ -6,6 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = { version = "0.7", default-features = false, features = ["tokio"] }
-reqwest = { version = "0.11.16", default-features = false }
-tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread"] }
+axum = { workspace = true, features = ["tokio", "http2"] }
+reqwest.workspace = true
+tokio.workspace = true

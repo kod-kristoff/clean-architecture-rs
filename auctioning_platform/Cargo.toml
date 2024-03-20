@@ -4,3 +4,13 @@
 resolver = "2"
 members = ["auctions", "foundation", "webapp"]
 
+[workspace.dependencies]
+# local crates
+
+# external crates
+axum = { version = "0.7", default-features = false, features = ["tokio"] }
+reqwest = { version = "0.11.16", default-features = false }
+tokio = { version = "1", default-features = false, features = [
+    "macros",
+    "rt-multi-thread",
+] }
