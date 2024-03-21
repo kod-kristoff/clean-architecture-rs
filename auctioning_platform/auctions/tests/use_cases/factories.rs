@@ -8,7 +8,7 @@ use crate::in_memory_repo::InMemoryAuctionsRepo;
 
 #[fixture]
 pub fn yesterday() -> DateTime<Utc> {
-    Utc::now() - chrono::Duration::days(1)
+    Utc::now() - chrono::Duration::try_days(1).unwrap()
 }
 
 #[fixture]
