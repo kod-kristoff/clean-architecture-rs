@@ -6,10 +6,14 @@ members = ["auctions", "foundation", "webapp"]
 
 [workspace.dependencies]
 # local crates
+foundation = { version = "0.1.0", path = "./foundation" }
 
 # external crates
 axum = { version = "0.7", default-features = false, features = ["tokio"] }
+chrono = "0.4.35"
 reqwest = { version = "0.11.16", default-features = false }
+rstest = "0.15.0"
+rust_decimal = "1.25.0"
 tokio = { version = "^1.25", default-features = false, features = [
     "macros",
     "rt-multi-thread",
