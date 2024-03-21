@@ -9,7 +9,7 @@ pub async fn spawn_app() -> Context {
     let addr = listener.local_addr().unwrap();
 
     tokio::spawn(async move {
-        axum::serve(listener,webapp::startup::create_app())
+        axum::serve(listener, webapp::startup::create_app())
             .await
             .unwrap();
     });

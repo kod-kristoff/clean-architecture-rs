@@ -40,9 +40,7 @@ mod place_bid {
     use super::*;
 
     #[rstest]
-    fn should_win_auction_if_is_the_only_bidder_above_starting_price(
-        mut auction_wo_bids: Auction,
-    ) {
+    fn should_win_auction_if_is_the_only_bidder_above_starting_price(mut auction_wo_bids: Auction) {
         auction_wo_bids
             .place_bid(BidderId(1), get_dollars("11"))
             .unwrap();
@@ -51,9 +49,7 @@ mod place_bid {
     }
 
     #[rstest]
-    fn should_not_be_winning_auction_if_bids_below_starting_price(
-        mut auction_wo_bids: Auction,
-    ) {
+    fn should_not_be_winning_auction_if_bids_below_starting_price(mut auction_wo_bids: Auction) {
         auction_wo_bids
             .place_bid(BidderId(1), get_dollars("5"))
             .unwrap();
