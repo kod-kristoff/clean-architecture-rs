@@ -7,20 +7,20 @@ use std::sync::Mutex;
 pub struct InMemoryAuctionsRepo {
     store: Mutex<HashMap<AuctionId, Auction>>,
 }
-
+impl Default for InMemoryAuctionsRepo {
+    fn default() -> Self {
+        Self { store: Mutex::new(HashMap::new()) }
+    }
+}
 impl InMemoryAuctionsRepo {
     pub fn new() -> Self {
-        let store = Mutex::new(HashMap::new());
-        Self { store }
+        Self { store: Mutex::new(HashMap::new()) }
     }
 }
 
 impl AuctionsRepository for InMemoryAuctionsRepo {
     fn get(&self, auction_id: AuctionId) -> Option<Auction> {
-        match self.store.lock().unwrap().get(&auction_id) {
-            None => None,
-            Some(auction) => Some(auction.clone()),
-        }
+        self.store.lock().unwrap().get(&auction_id).cloned()
     }
 
     fn save(&self, auction: &Auction) -> ApplicationResult<()> {

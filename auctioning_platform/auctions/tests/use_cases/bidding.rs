@@ -60,7 +60,7 @@ fn place_bid_uc(auction: Auction, auctions_repo: Arc<dyn AuctionsRepository>) ->
 }
 
 #[rstest]
-fn first_bid_higher_than_intial_price_is_winning(
+fn first_bid_higher_than_initial_price_is_winning(
     auction: Auction,
     auction_id: AuctionId,
     auctions_repo: DynAuctionsRepository,
