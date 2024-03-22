@@ -9,12 +9,14 @@ pub struct InMemoryAuctionsRepo {
 }
 impl Default for InMemoryAuctionsRepo {
     fn default() -> Self {
-        Self { store: Mutex::new(HashMap::new()) }
+        Self {
+            store: Mutex::new(HashMap::new()),
+        }
     }
 }
 impl InMemoryAuctionsRepo {
     pub fn new() -> Self {
-        Self { store: Mutex::new(HashMap::new()) }
+        Self::default()
     }
 }
 
