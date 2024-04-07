@@ -10,7 +10,7 @@ foundation = { version = "0.1.0", path = "./foundation" }
 
 # external crates
 axum = { version = "0.7", default-features = false, features = ["tokio"] }
-chrono = "0.4.35"
+chrono = "0.4.37"
 reqwest = { version = "0.12.3", default-features = false }
 rstest = "0.18.2"
 rust_decimal = "1.35.0"
